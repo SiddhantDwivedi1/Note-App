@@ -1,33 +1,60 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
+import NoteForm from './components/NoteForm'
+import NoteList from './components/NoteList'
+
+const API = 'http://localhost:3001/notes'
 
 const App = () => {
 
+  const [title, setTitle] = useState('')
+  const [details, setDetails] = useState('')
+  const [task, setTask] = useState([])
+
+  useEffect(() => {
+    fetch(API)
+      .then(res => res.json())
+      .then(data => setTask(data))
+  }, [])
+
   const submitHandler = (e) => {
     e.preventDefault()
-    console.log('Form Submitted');
+    const newNote = { title, details }
 
+    fetch(API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newNote)
+    })
+      .then(res => res.json())
+      .then(data => {
+        setTask([...task, data])
+        setTitle('')
+        setDetails('')
+      })
+  }
+
+  const deleteNote = (id, idx) => {
+    fetch(`${API}/${id}`, { method: 'DELETE' })
+      .then(() => {
+        const copyTask = [...task]
+        copyTask.splice(idx, 1)
+        setTask(copyTask)
+      })
   }
 
   return (
-    <div className='h-screen lg:flex bg-black text-white'>
-      <form onSubmit={(e) => {
-        submitHandler(e)
-      }} className='flex gap-4 lg:w-1/2 items-start flex-col p-10'>
-        <h1 className='text-4xl font-bold'>Add Notes</h1>
-
-        <input type="text" placeholder='Enter Notes Heading' className='px-5 py-2 w-full outline-none border-2 font-medium rounded' />
-
-        <textarea type="text" placeholder='Write Details' className='px-5 py-2 h-32 w-full outline-none border-2 font-medium rounded' />
-
-        <button className='bg-white text-black px-5 py-2 w-full font-medium outline-none rounded'>Add Notes</button>
-      </form>
-      <div className='lg:w-1/2 lg:border-l-2 p-10'>
-        <h1 className='text-4xl font-bold'>Recent Notes</h1>
-        <div className='flex flex-wrap gap-5 m-5 h-full overflow-auto'>
-          <div className='h-52 w-40 rounded-2xl bg-white'></div>
-          <div className='h-52 w-40 rounded-2xl bg-white'></div>
-        </div>
-      </div>
+    <div className='min-h-screen lg:flex bg-black text-white'>
+      <NoteForm
+        title={title}
+        details={details}
+        setTitle={setTitle}
+        setDetails={setDetails}
+        submitHandler={submitHandler}
+      />
+      <NoteList
+        task={task}
+        deleteNote={deleteNote}
+      />
     </div>
   )
 }

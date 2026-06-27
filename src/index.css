@@ -1,1 +1,7 @@
 @import "tailwindcss";
+.notes-wrapper {
+  scrollbar-width: none;
+}
+.notes-wrapper::-webkit-scrollbar {
+  display: none;
+}
